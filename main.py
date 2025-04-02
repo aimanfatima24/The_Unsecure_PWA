@@ -1,16 +1,22 @@
 from flask import Flask
 from flask import render_template
 from flask import request
-from flask import redirect
+from flask import redirect, session
 import user_management as dbHandler
 
 # Code snippet for logging a message
 # app.logger.critical("message")
 
 app = Flask(__name__)
-
+app.secret_key = "jajshu234"
+allowed_redirects = {"/index.html", "/success.html", "/signup.html", "/layout"}
 
 @app.route("/success.html", methods=["POST", "GET", "PUT", "PATCH", "DELETE"])
+def success():
+    if "user_id" not in session:
+        return render_template("/index.html")
+    return render_template("success.html")
+
 def addFeedback():
     if request.method == "GET" and request.args.get("url"):
         url = request.args.get("url", "")
@@ -45,7 +51,13 @@ def signup():
 def home():
     if request.method == "GET" and request.args.get("url"):
         url = request.args.get("url", "")
-        return redirect(url, code=302)
+    #return redirect(url, code=302)
+    
+        if url.startswith("/") and not url.startswith("//") and url in allowed_redirects:
+            return redirect(url, code=302)
+        else:
+            return render_template("/index.html")
+
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
